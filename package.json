@@ -1,0 +1,12 @@
+{
+  "name": "alpic-technical-test",
+  "version": "1.0.0",
+  "description": "Audiobook player with AI chat capabilities",
+  "scripts": {
+    "dev:backend": "cd apps/api && npm run start:dev",
+    "dev:frontend": "cd apps/web && npm run dev",
+    "build:backend": "cd apps/api && npm run build",
+    "build:frontend": "cd apps/web && npm run build",
+    "build": "npm run build:backend && npm run build:frontend"
+  }
+}
