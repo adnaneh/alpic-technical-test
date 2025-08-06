@@ -1,33 +1,30 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { Server } from 'socket.io';
-import { PlaybackService } from './mcp/playback/playback.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors();
-  
-  // Configure Swagger
-  const config = new DocumentBuilder()
-    .setTitle('Chat API')
-    .setDescription('API for chat application with MCP tools')
-    .setVersion('1.0')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
-  
-  // Add Socket.IO for playback control
-  const httpServer = app.getHttpServer();
-  const io = new Server(httpServer, { 
-    cors: { origin: '*' },
-    path: '/socket.io'
+  const app = await NestFactory.create(AppModule, {
+    cors: { origin: '*', credentials: true },
   });
-  
-  // Initialize playback service with Socket.IO instance
-  const playbackService = app.get(PlaybackService);
-  playbackService.setIoServer(io);
-  
-  await app.listen(process.env.PORT ?? 3001);
+
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+    forbidNonWhitelisted: true,
+  }));
+
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Chat API')
+      .setDescription('API for chat application with MCP tools')
+      .setVersion('1.0')
+      .build();
+    SwaggerModule.setup('api-docs', app, SwaggerModule.createDocument(app, config));
+  }
+
+  const port = Number(process.env.PORT) || 3001;
+  await app.listen(port);
 }
 bootstrap();

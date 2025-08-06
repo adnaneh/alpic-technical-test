@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { McpController } from './mcp.controller';
-import { LibraryService } from './library/library.service';
-import { PlaybackService } from './playback/playback.service';
+import { McpClientService } from './mcp-client.service';
+import { LibraryServerModule } from './library/library-server.module';
+import { PlaybackServerModule } from './playback/playback-server.module';
 
 @Module({
-  controllers: [McpController],
-  providers: [LibraryService, PlaybackService],
-  exports: [LibraryService, PlaybackService], // Export for use in other modules
+  imports: [LibraryServerModule, PlaybackServerModule],
+  providers: [McpClientService],
+  exports: [McpClientService, LibraryServerModule, PlaybackServerModule],
 })
 export class McpModule {}
