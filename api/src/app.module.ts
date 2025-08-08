@@ -6,7 +6,7 @@ import { PlaybackServerModule } from './mcp/playback/playback-server.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath: '../.env', isGlobal: true }),
+    ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
     ChatModule,
     LibraryServerModule,
     PlaybackServerModule,

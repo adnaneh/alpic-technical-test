@@ -7,8 +7,6 @@ import { useAutoScroll } from "./hooks/useAutoScroll";
 import { useSocketAudio } from "./hooks/useSocketAudio";
 import { ChatMessage } from "./components/ChatMessage";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
-
 function hasResponseId(data: unknown): data is { responseId: string } {
   return (
     typeof data === "object" &&
@@ -27,7 +25,7 @@ export default function Home() {
 
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
-      api: `${API_BASE}/api/chat`,
+      api: `/api/chat`,
       prepareSendMessagesRequest: ({ messages }) => ({
         body: {
           message: messages[messages.length - 1],
@@ -71,6 +69,9 @@ export default function Home() {
       <section ref={containerRef} className="flex-1 overflow-y-auto space-y-4">
         {messages.length === 0 && (
           <div className="space-y-3">
+            <h2 className="text-lg font-semibold">
+              🎧🏛️ <span className="font-serif italic">Socrates</span> — your AI audiobook companion for curious minds.
+            </h2>
             <h2 className="text-lg font-semibold">Try asking:</h2>
             <div className="grid gap-2">
               {starters.map((s) => (

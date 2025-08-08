@@ -1,5 +1,5 @@
 // mcp-client.service.ts
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ModuleRef } from "@nestjs/core";
 import { z } from "zod";
 import type { Tool } from "ai";
@@ -8,9 +8,13 @@ import {
   ToolMetadata,
   DiscoveredTool,
 } from "@rekog/mcp-nest";
+import { LIBRARY_MCP_MODULE_ID } from "./library/library-server.module";
+import { PLAYBACK_MCP_MODULE_ID } from "./playback/playback-server.module";
 
 @Injectable()
 export class McpClientService {
+  private readonly mcpModuleIds = [LIBRARY_MCP_MODULE_ID, PLAYBACK_MCP_MODULE_ID];
+
   constructor(
     private readonly registry: McpRegistryService,
     private readonly moduleRef: ModuleRef
@@ -20,10 +24,8 @@ export class McpClientService {
   listAllToolDefs(): Record<string, Tool> {
     const defs: Record<string, Tool> = {};
 
-    for (const moduleId of this.getAllModuleIds()) {
-      const discovered = this.registry.getTools(
-        moduleId
-      );
+    for (const moduleId of this.mcpModuleIds) {
+      const discovered = this.registry.getTools(moduleId);
 
       for (const t of discovered) {
         defs[t.metadata.name] = this.bindTool(moduleId, t);
@@ -33,11 +35,7 @@ export class McpClientService {
     return defs;
   }
 
-  /** Bind a discovered tool to its provider method. Fail fast on misconfig. */
-  private bindTool(
-    moduleId: string,
-    t: DiscoveredTool<ToolMetadata>
-  ): Tool {
+  private bindTool(moduleId: string, t: DiscoveredTool<ToolMetadata>): Tool {
     const found: { providerClass: any; methodName: string } =
       this.registry.findTool(moduleId, t.metadata.name);
 
@@ -52,12 +50,5 @@ export class McpClientService {
       execute: async (args: unknown) =>
         fn.call(instance, await inputSchema.parseAsync(args)),
     };
-  }
-
-  /** Get all module IDs discovered by the registry (reflection fallback). */
-  private getAllModuleIds(): string[] {
-    const reg: any = this.registry;
-    const map = reg.discoveredToolsByMcpModuleId;
-    return map instanceof Map ? Array.from(map.keys()) : [];
   }
 }

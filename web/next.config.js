@@ -1,10 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
+    const backend = process.env.BACKEND_URL || 'http://localhost:3001';
+    
     return [
       {
-        source: "/api/chat",
-        destination: "http://localhost:3001/chat",
+        source: '/socket.io/:path*',
+        destination: `${backend}/socket.io/:path*`,
       },
     ];
   },

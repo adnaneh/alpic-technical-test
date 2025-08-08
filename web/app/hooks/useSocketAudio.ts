@@ -3,22 +3,27 @@
 import { useEffect } from "react";
 import { io } from "socket.io-client";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
-
 export function useSocketAudio(audioRef: React.RefObject<HTMLAudioElement | null>) {
   useEffect(() => {
-    const socket = io(API_BASE, { transports: ['websocket'] });
+    const socket = io("/", { path: "/socket.io/", transports: ["websocket", "polling"] });
 
-    socket.on("play", ({ url, start_sec = 0 }: { url: string; start_sec?: number }) => {
-      const a = audioRef.current;
-      if (!a) return;
-      a.pause();
-      a.src = url;
-      a.currentTime = start_sec;
-      void a.play();
-    });
-    socket.on("pause", () => audioRef.current?.pause());
-    socket.on("resume", () => audioRef.current?.play());
+    const withAudio = (action: (audio: HTMLAudioElement) => void) =>
+      audioRef.current ? action(audioRef.current) : console.error("Audio element not found");
+
+    const safePlay = () =>
+      withAudio(a => a.play().catch(err => console.error("Play failed:", err)));
+
+    socket.on("play", ({ url, start_sec = 0 }) =>
+      withAudio(a => {
+        a.pause();
+        a.src = url;
+        a.currentTime = start_sec;
+        safePlay();
+      })
+    );
+
+    socket.on("pause", () => withAudio(a => a.pause()));
+    socket.on("resume", safePlay);
 
     return () => {
       socket.disconnect();

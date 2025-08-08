@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "node server.js",
+    "start:next": "next start",
     "lint": "next lint",
     "generate-api": "tsx generate-api.ts"
   },
@@ -13,6 +14,7 @@
     "@ai-sdk/openai": "^2.0.4",
     "@ai-sdk/react": "^2.0.5",
     "ai": "^5.0.5",
+    "http-proxy": "^1.18.1",
     "next": "^15.4.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
