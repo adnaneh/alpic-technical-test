@@ -7,11 +7,11 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-const BACKEND = process.env.INTERNAL_API_URL || "http://localhost:3001";
+const INTERNAL_API = process.env.INTERNAL_API_URL || "http://localhost:3001";
 const isSocketIO = (url = "") => url === "/socket.io" || url.startsWith("/socket.io/");
 
 const proxy = httpProxy.createProxyServer({
-  target: BACKEND,
+  target: INTERNAL_API,
   changeOrigin: true,
   ws: true,
   xfwd: true,
@@ -43,6 +43,6 @@ app.prepare().then(() => {
   const port = process.env.PORT || 3000;
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
-    console.log(`> Proxying /socket.io to ${BACKEND}`);
+    console.log(`> Proxying /socket.io to ${INTERNAL_API}`);
   });
 });
