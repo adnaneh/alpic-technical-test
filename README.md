@@ -1,5 +1,3 @@
-# 📚 Socrates — Your Deep-Dive Audio Learning Companion
-
 ![Socrates Banner](banner.png)
 
 You’re on the go, in your car, on a bike, on a walk. You want to learn about something, you open conversational chatgpt, but every answer is shallow, tells you things you already know, you want to go in depth but chatgpt keeps giving you 30 second answers that stay on the surface.
