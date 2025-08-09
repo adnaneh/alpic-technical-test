@@ -7,8 +7,7 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-const BACKEND = process.env.BACKEND_URL || "http://localhost:3001";
-const nextUpgrade = app.getUpgradeHandler?.();
+const BACKEND = process.env.INTERNAL_API_URL || "http://localhost:3001";
 const isSocketIO = (url = "") => url === "/socket.io" || url.startsWith("/socket.io/");
 
 const proxy = httpProxy.createProxyServer({
@@ -28,6 +27,8 @@ proxy.on("error", (err, req, res) => {
 });
 
 app.prepare().then(() => {
+  const nextUpgrade = app.getUpgradeHandler?.();
+  
   const server = http.createServer((req, res) => {
     if (isSocketIO(req.url)) return proxy.web(req, res);
     return handle(req, res);
