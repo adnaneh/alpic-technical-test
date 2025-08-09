@@ -7,51 +7,41 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-// Use BACKEND_URL for both HTTP and WS
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
-const BACKEND_WS_URL = BACKEND_URL.replace(/^http/, "ws");
-
-console.log("Backend URL:", BACKEND_URL);
-console.log("Backend WS URL:", BACKEND_WS_URL);
+const BACKEND = process.env.BACKEND_URL || "http://localhost:3001";
+const nextUpgrade = app.getUpgradeHandler?.();
+const isSocketIO = (url = "") => url === "/socket.io" || url.startsWith("/socket.io/");
 
 const proxy = httpProxy.createProxyServer({
-  target: BACKEND_URL,
+  target: BACKEND,
   changeOrigin: true,
   ws: true,
+  xfwd: true,
 });
 
-// Handle proxy errors
 proxy.on("error", (err, req, res) => {
-  console.error("Proxy error:", err);
-  if (res.writeHead) {
-    res.writeHead(502, { "Content-Type": "text/plain" });
-    res.end("Bad Gateway");
+  console.error("Proxy error:", err?.message || err);
+  if (res?.writeHead) {
+    try { res.writeHead(502, { "Content-Type": "text/plain" }); res.end("Bad Gateway"); } catch {}
+  } else if (res?.destroy) {
+    try { res.destroy(); } catch {}
   }
 });
 
 app.prepare().then(() => {
   const server = http.createServer((req, res) => {
-    if (req.url.startsWith("/socket.io")) {
-      // Proxy Socket.IO HTTP requests (polling) to backend
-      proxy.web(req, res, { target: BACKEND_URL });
-    } else {
-      // Let Next.js handle everything else
-      handle(req, res);
-    }
+    if (isSocketIO(req.url)) return proxy.web(req, res);
+    return handle(req, res);
   });
 
-  // Proxy WebSocket upgrades to backend
   server.on("upgrade", (req, socket, head) => {
-    if (req.url.startsWith("/socket.io")) {
-      proxy.ws(req, socket, head, { target: BACKEND_WS_URL });
-    } else {
-      socket.destroy();
-    }
+    if (isSocketIO(req.url)) return proxy.ws(req, socket, head);
+    if (nextUpgrade) return nextUpgrade(req, socket, head);
+    try { socket.end(); } catch {}
   });
 
   const port = process.env.PORT || 3000;
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
-    console.log(`> Proxying /socket.io to ${BACKEND_URL}`);
+    console.log(`> Proxying /socket.io to ${BACKEND}`);
   });
 });
