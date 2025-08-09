@@ -1,17 +1,37 @@
 ![Socrates Banner](banner.png)
 
-You’re on the go 🚗🚴‍♀️🚶‍♂️ — in your car, on a bike, on a walk.  
-You want to learn about something 📚, you open conversational ChatGPT, but every answer is shallow, tells you things you already know.  
-You want to go in depth 🔍, but ChatGPT keeps giving you 30-second answers that stay on the surface.
+# Learn Deeply, Anywhere 🚗🚴‍♀️🚶‍♂️🎧
 
-Meet **Socrates** 🎧 — your audiobook companion that combines the flexibility of LLMs with the depth and structure of audiobooks and audio content.  
-This is the future of conversational and audio learning, where you will be able to:
+You’re on the go — in your car, on a bike, on a walk.  
+You want to learn something 📚, so you open conversational ChatGPT… but the answers feel shallow.  
+You’re ready to go deep 🔍, yet you keep getting 30-second surface-level replies.
 
-- **Ask to learn about a topic** and it will find the right chapter for you 🎯.  
-- **Missed a piece of the logic** that’s hard to grasp in audio? Ask Socrates to explain the last idea 💡 and he will answer by voice and writing.  
-- **You know what you want to master** — Infrastructure, Fundraising, Selling… but not the exact next topic? Socrates will play chapters to fill the gaps in your knowledge.
+---
 
-Socrates will be there at your phone’s reach 📱, to explore whatever you need to build your next big thing.
+## Meet **Socrates** 🏛️
+
+Your audiobook companion that blends:
+
+- The **flexibility** of LLMs 🤖
+- The **depth & structure** of audiobooks 🎧
+
+This is the future of conversational + audio learning.
+
+---
+
+## What You Can Do
+
+- 🎯 **Ask about any topic** — Socrates will find the right chapter for you.  
+- 💡 **Missed part of the logic?** Ask Socrates to explain the last idea by voice *and* writing.  
+- 🧠 **Master what matters** — whether it’s Infrastructure, Fundraising, or Selling, Socrates will play chapters to fill the gaps in your knowledge.
+
+---
+
+## Why It’s Different
+
+- No more rewinding ⏮️ to “catch that part again”  
+- No more vague overviews  
+- Just **structured, in-depth learning** that moves with you
 
 ---
 
