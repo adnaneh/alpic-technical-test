@@ -3,8 +3,8 @@
 ## Learn Deeply, Anywhere 🚗🚴‍♀️🚶‍♂️🎧
 
 You’re on the go — in your car, on a bike, on a walk.  
-You want to learn something 📚, so you open conversational ChatGPT… but the answers feel shallow.  
-You’re ready to go deep 🔍, yet you keep getting 30-second surface-level replies.
+You want to learn something, so you open conversational ChatGPT… but the answers feel shallow.  
+You’re ready to go deep , yet you keep getting 30-second surface-level replies.
 
 
 ## Meet **Socrates: Your Audiobook Companion for Curious Minds** 🏛️
