@@ -17,7 +17,7 @@
     "removeComments": true,
     "incremental": true,
     "strictNullChecks": false,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "noUnusedLocals": true,

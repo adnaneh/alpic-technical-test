@@ -21,7 +21,7 @@ const stripHopByHop = (h: Headers) => {
 };
 
 export async function POST(req: NextRequest) {
-  const backend = process.env.BACKEND_URL;
+  const backend = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_URL;
   if (!backend) {
     console.error("BACKEND_URL is not set");
     return NextResponse.json({ error: "Backend service is not configured" }, { status: 503 });
@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
     resHeaders.delete("content-length");
     if (!resHeaders.has("x-accel-buffering")) resHeaders.set("x-accel-buffering", "no");
     if (!resHeaders.has("cache-control")) resHeaders.set("cache-control", "no-cache, no-transform");
+    if (!resHeaders.has("content-type")) resHeaders.set("content-type", "text/event-stream");
 
     return new Response(upstream.body, {
       status: upstream.status,

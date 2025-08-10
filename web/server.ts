@@ -7,13 +7,16 @@ const dev: boolean = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-const INTERNAL_API: string =
-  process.env.INTERNAL_API_URL ?? "http://localhost:3001";
+const WS_TARGET: string =
+  process.env.NEXT_PUBLIC_WS_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.INTERNAL_API_URL ||
+  "http://localhost:3001";
 const isSocketIO = (url: string): boolean =>
   url === "/socket.io" || url.startsWith("/socket.io/");
 
 const proxy = createProxyServer({
-  target: INTERNAL_API,
+  target: WS_TARGET,
   changeOrigin: true,
   ws: true,
   xfwd: true,
@@ -65,6 +68,6 @@ app.prepare().then(() => {
   const port: number = Number(process.env.PORT ?? 3000);
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
-    console.log(`> Proxying /socket.io to ${INTERNAL_API}`);
+    console.log(`> Proxying /socket.io to ${WS_TARGET}`);
   });
 });

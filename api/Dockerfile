@@ -2,15 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json ./
+# Install dependencies reproducibly
+COPY package*.json ./
+# Use legacy peer deps to avoid peer resolution conflicts matching local installs
+RUN npm ci --legacy-peer-deps
 
-RUN NODE_OPTIONS="--max-old-space-size=512" npm install --legacy-peer-deps --verbose
-
+# Copy source and build
 COPY . .
+RUN npm run build
 
-RUN NODE_OPTIONS="--max-old-space-size=512" npm run build
-
-RUN npm prune --production --legacy-peer-deps
+# Prune dev dependencies for production image size
+RUN npm prune --omit=dev
 
 EXPOSE 3000
 

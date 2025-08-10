@@ -18,3 +18,4 @@ audiobook.m4a
 *.m4a
 *.mp3
 *.wav
+web/coverage/

@@ -1,20 +1,25 @@
 import { Injectable } from "@nestjs/common";
 import { ModuleRef } from "@nestjs/core";
 import { type Tool } from "ai";
-import { ToolMetadata, DiscoveredTool, ResourceMetadata } from "@rekog/mcp-nest";
+import {
+  ToolMetadata,
+  DiscoveredTool,
+  ResourceMetadata,
+} from "@rekog/mcp-nest";
 import { PlaybackMcpClientService } from "./playback/playback.mcp-client.service";
 import { LibraryMcpClientService } from "./library/library.mcp-client.service";
 import z from "zod";
+import type { ToolCallContext } from "./mcp-context";
 
 @Injectable()
 export class McpClientService {
   constructor(
     private readonly moduleRef: ModuleRef,
     private readonly playbackTools: PlaybackMcpClientService,
-    private readonly libraryTools: LibraryMcpClientService
+    private readonly libraryTools: LibraryMcpClientService,
   ) {}
 
-  listAllToolDefs(): Record<string, Tool> {
+  listAllToolDefs(ctx?: ToolCallContext): Record<string, Tool> {
     const toolDefs: Record<string, Tool> = {};
 
     const playbackDiscovered = this.playbackTools.getTools();
@@ -29,28 +34,37 @@ export class McpClientService {
     ];
 
     for (const t of allTools) {
-      toolDefs[t.metadata.name] = this.bindTool(t);
+      toolDefs[t.metadata.name] = this.bindTool(t, ctx);
     }
 
     return toolDefs;
   }
 
   private bindTool(
-    t: DiscoveredTool<ToolMetadata | ResourceMetadata>
+    t: DiscoveredTool<ToolMetadata | ResourceMetadata>,
+    ctx?: ToolCallContext,
   ): Tool {
     const instance = this.moduleRef.get(t.providerClass, { strict: false });
     const fn = instance?.[t.methodName];
 
-    const inputSchema =
-      'parameters' in (t.metadata as any) && (t.metadata as any).parameters
-        ? (t.metadata as any).parameters
-        : z.object({});
+    const inputSchema = this.isToolMetadata(t.metadata)
+      ? (t.metadata.parameters ?? z.object({}))
+      : z.object({});
 
-    return {
+    const tool: Tool = {
       description: t.metadata.description,
       inputSchema,
-      execute: async (args: unknown) =>
-        fn.call(instance, await inputSchema.parseAsync(args)),
+      execute: async (args: unknown) => {
+        const parsed = await inputSchema.parseAsync(args);
+        return fn.call(instance, parsed, ctx);
+      },
     };
+    return tool;
+  }
+
+  private isToolMetadata(
+    meta: ToolMetadata | ResourceMetadata,
+  ): meta is ToolMetadata {
+    return "parameters" in meta;
   }
 }

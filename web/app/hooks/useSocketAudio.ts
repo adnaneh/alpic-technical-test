@@ -1,11 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-export function useSocketAudio(audioRef: React.RefObject<HTMLAudioElement | null>) {
+export function useSocketAudio(
+  audioRef: React.RefObject<HTMLAudioElement | null>
+): string | null {
+  const [socketId, setSocketId] = useState<string | null>(null);
+
   useEffect(() => {
     const socket = io("/", { path: "/socket.io/", transports: ["websocket", "polling"] });
+
+    socket.on("connect", () => setSocketId(socket.id ?? null));
+    socket.on("disconnect", () => setSocketId(null));
 
     const withAudio = (action: (audio: HTMLAudioElement) => void) =>
       audioRef.current ? action(audioRef.current) : console.error("Audio element not found");
@@ -29,4 +36,6 @@ export function useSocketAudio(audioRef: React.RefObject<HTMLAudioElement | null
       socket.disconnect();
     };
   }, [audioRef]);
+
+  return socketId;
 }

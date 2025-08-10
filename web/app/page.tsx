@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useMemo, useCallback } from "react";
+import React, { useRef, useState, useMemo, useCallback, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useAutoScroll } from "./hooks/useAutoScroll";
@@ -22,14 +22,20 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const socketIdState = useSocketAudio(audioRef);
+  const socketIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    socketIdRef.current = socketIdState;
+  }, [socketIdState]);
+  const connected = Boolean(socketIdState);
 
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
-      api: `/api/chat`,
       prepareSendMessagesRequest: ({ messages }) => ({
         body: {
           message: messages[messages.length - 1],
           previousResponseId: prevRespId.current,
+          socketId: socketIdRef.current,
         },
       }),
     }),
@@ -43,7 +49,6 @@ export default function Home() {
   const loading = status === "submitted" || status === "streaming";
   // Watch only message count and status to avoid re-running on every render
   useAutoScroll(containerRef, endRef, [messages.length, status]);
-  useSocketAudio(audioRef);
 
   const starters = useMemo(() => [
     { label: "🤖 Play a chapter about RAG", text: "Play a chapter about RAG" },
@@ -76,7 +81,12 @@ export default function Home() {
             <h2 className="text-lg font-semibold">Try asking:</h2>
             <div className="grid gap-2">
               {starters.map((s) => (
-                <button key={s.text} onClick={() => quick(s.text)} className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded">
+                <button
+                  key={s.text}
+                  onClick={() => quick(s.text)}
+                  disabled={!connected}
+                  className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded disabled:opacity-50"
+                >
                   {s.label}
                 </button>
               ))}
@@ -96,6 +106,9 @@ export default function Home() {
       <section className="bg-gray-50 p-4 rounded">
         <audio ref={audioRef} controls className="w-full" preload="none" />
         <p className="text-sm text-gray-600 mt-2">🎵 Audio player — controlled by chat</p>
+        {!connected && (
+          <p className="text-sm text-amber-600 mt-1">Connecting to audio… please wait</p>
+        )}
       </section>
 
       
@@ -105,9 +118,9 @@ export default function Home() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask anything"
           className="flex-1 border p-2 rounded"
-          disabled={loading}
+          disabled={loading || !connected}
         />
-        <button type="submit" className="bg-black text-white px-4 py-2 rounded disabled:opacity-50" disabled={loading}>
+        <button type="submit" className="bg-black text-white px-4 py-2 rounded disabled:opacity-50" disabled={loading || !connected}>
           Send
         </button>
       </form>

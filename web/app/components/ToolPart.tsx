@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { getToolName, type ToolUIPart } from "ai";
 
 const TOOL_LABELS: Record<string, string> = {

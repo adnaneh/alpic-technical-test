@@ -18,7 +18,8 @@ export const BOOKS: Book[] = [
     book_id: 1,
     title: "AI Engineering: Building Applications with Foundation Models",
     author: "Chip Huyen",
-    audio_url: "https://adnane-alpic-audiobooks.s3.amazonaws.com/ai-engineering.m4a",
+    audio_url:
+      "https://adnane-alpic-audiobooks.s3.amazonaws.com/ai-engineering.m4a",
     chapters: [
       { chap_id: 1, title: "Preface", start_sec: 0 },
       {
