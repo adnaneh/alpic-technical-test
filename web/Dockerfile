@@ -1,12 +1,14 @@
 FROM node:20-slim
 
 WORKDIR /app
-ENV NODE_ENV=production
 
 COPY package*.json ./
 
-# Install with devDependencies to satisfy Next/Tailwind build plugins
-RUN npm install --include=dev
+# Ensure devDependencies are installed for the build step
+# Avoid NODE_ENV=production during install so dev deps are not omitted
+ENV NODE_ENV=development
+ENV NPM_CONFIG_PRODUCTION=false
+RUN npm install
 
 # Ensure the correct Lightning CSS native binary is present for the
 # current architecture to avoid runtime resolution issues during build.
@@ -20,11 +22,17 @@ RUN set -eux; \
       *) echo "Unknown arch: $arch; skipping lightningcss native add-on pin" ;; \
     esac
 
+# Ensure PostCSS build plugins are present even if dev deps are omitted
+RUN npm install @tailwindcss/postcss@^4 postcss@^8 autoprefixer@^10 --no-save
+
 COPY . .
 
 RUN NODE_OPTIONS="--max-old-space-size=512" npm run build
 
 RUN npm prune --omit=dev
+
+# Switch final container runtime to production
+ENV NODE_ENV=production
 
 EXPOSE 3000
 
