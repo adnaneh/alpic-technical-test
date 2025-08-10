@@ -78,7 +78,7 @@ describe("McpClientService", () => {
 
     const toolOpts: { toolCallId: string; messages: ModelMessage[] } = {
       toolCallId: "t1",
-      messages: [] as ModelMessage[],
+      messages: [],
     };
     await expect(defs["do_thing"].execute({ x: 1 }, toolOpts)).resolves.toBe(2);
     await expect(

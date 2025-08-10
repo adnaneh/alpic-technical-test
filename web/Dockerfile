@@ -7,6 +7,18 @@ COPY package*.json ./
 
 RUN npm install --omit=dev=false
 
+# Ensure the correct Lightning CSS native binary is present for the
+# current architecture to avoid runtime resolution issues during build.
+# Uses TARGETARCH when available, otherwise infers via dpkg.
+ARG TARGETARCH
+RUN set -eux; \
+    arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
+    case "$arch" in \
+      amd64) npm install lightningcss-linux-x64-gnu --no-save ;; \
+      arm64) npm install lightningcss-linux-arm64-gnu --no-save ;; \
+      *) echo "Unknown arch: $arch; skipping lightningcss native add-on pin" ;; \
+    esac
+
 COPY . .
 
 RUN NODE_OPTIONS="--max-old-space-size=512" npm run build
