@@ -5,7 +5,8 @@ ENV NODE_ENV=production
 
 COPY package*.json ./
 
-RUN npm install --omit=dev=false
+# Install with devDependencies to satisfy Next/Tailwind build plugins
+RUN npm install --include=dev
 
 # Ensure the correct Lightning CSS native binary is present for the
 # current architecture to avoid runtime resolution issues during build.
