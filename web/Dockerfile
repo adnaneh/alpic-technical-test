@@ -2,13 +2,17 @@ FROM node:20-slim
 
 WORKDIR /app
 
+# Ensure base runtime libs for native addons
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libstdc++6 libgcc-s1 ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY package*.json ./
 
-# Ensure devDependencies are installed for the build step
-# Avoid NODE_ENV=production during install so dev deps are not omitted
-ENV NODE_ENV=development
-ENV NPM_CONFIG_PRODUCTION=false
-RUN npm install
+# Install all deps including dev (Next/Tailwind build-time)
+# Keep NODE_ENV=production for consistent Next behavior, but force dev deps
+ENV NODE_ENV=production
+RUN npm install --include=dev
 
 # Ensure the correct Lightning CSS native binary is present for the
 # current architecture to avoid runtime resolution issues during build.
@@ -17,8 +21,8 @@ ARG TARGETARCH
 RUN set -eux; \
     arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
     case "$arch" in \
-      amd64) npm install lightningcss-linux-x64-gnu --no-save ;; \
-      arm64) npm install lightningcss-linux-arm64-gnu --no-save ;; \
+      amd64) npm install lightningcss-linux-x64-gnu --no-save && cp node_modules/lightningcss-linux-x64-gnu/lightningcss.linux-x64-gnu.node node_modules/lightningcss/ || true ;; \
+      arm64) npm install lightningcss-linux-arm64-gnu --no-save && cp node_modules/lightningcss-linux-arm64-gnu/lightningcss.linux-arm64-gnu.node node_modules/lightningcss/ || true ;; \
       *) echo "Unknown arch: $arch; skipping lightningcss native add-on pin" ;; \
     esac
 
