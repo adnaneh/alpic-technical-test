@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res, BadRequestException } from "@nestjs/common";
+import { Body, Controller, Post, Res } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { ConfigService } from "@nestjs/config";
 import { Response } from "express";
@@ -10,11 +10,16 @@ import {
   pipeUIMessageStreamToResponse,
   createUIMessageStream,
 } from "ai";
-import type { UIMessage } from "ai";
+// Use validated DTOs rather than raw UIMessage type
 
 import { McpClientService } from "../mcp/mcp-client.service";
-import { ChatRequestDto } from "./dto/chat-request.dto";
-import { CFG_CHAT_MAX_STEPS, CFG_OPENAI_API_KEY, CFG_OPENAI_MODEL } from "../config/keys";
+import { ChatRequestDto } from "./chat.dto";
+import {
+  CFG_CHAT_MAX_STEPS,
+  CFG_OPENAI_API_KEY,
+  CFG_OPENAI_MODEL,
+  CFG_OPENAI_STORE,
+} from "../config/keys";
 
 const SYSTEM_PROMPT = `
 You are an AI assistant with audiobook controls.
@@ -38,7 +43,7 @@ Behave like a careful, methodical audiobook operator who follows the above rules
 export class ChatController {
   constructor(
     private readonly cfg: ConfigService,
-    private readonly mcpClient: McpClientService,
+    private readonly mcpClient: McpClientService
   ) {}
 
   @Post("chat")
@@ -46,12 +51,16 @@ export class ChatController {
   @ApiResponse({ status: 200, description: "Server-sent event stream" })
   @ApiResponse({ status: 400, description: "Invalid request format" })
   async chat(@Body() body: ChatRequestDto, @Res() res: Response) {
-    const openai = createOpenAI({ apiKey: this.cfg.get<string>(CFG_OPENAI_API_KEY) });
-    const model = openai.responses(this.cfg.get<string>(CFG_OPENAI_MODEL) ?? "gpt-4o");
-    const maxSteps = Math.max(1, Number(this.cfg.get(CFG_CHAT_MAX_STEPS)) || 10);
+    const openai = createOpenAI({
+      apiKey: this.cfg.get<string>(CFG_OPENAI_API_KEY),
+    });
+    const model = openai.responses(
+      this.cfg.get<string>(CFG_OPENAI_MODEL) ?? "gpt-4o"
+    );
+    const maxSteps = Number(this.cfg.get(CFG_CHAT_MAX_STEPS)) || 10;
     const tools = this.mcpClient.listAllToolDefs({ socketId: body.socketId });
 
-    const prompt = this.getTextPromptOrThrow(body.message);
+    const prompt = body.message.parts[0].text;
 
     const stream = streamText({
       model,
@@ -60,7 +69,14 @@ export class ChatController {
       tools,
       stopWhen: stepCountIs(maxSteps),
       providerOptions: {
-        openai: { store: true, previousResponseId: body.previousResponseId },
+        openai: {
+          store: (() => {
+            const v = this.cfg.get<string>(CFG_OPENAI_STORE);
+            if (v == null) return true;
+            return ["1", "true", "yes", "on"].includes(v.toLowerCase());
+          })(),
+          previousResponseId: body.previousResponseId,
+        },
       },
     });
 
@@ -81,13 +97,5 @@ export class ChatController {
       status: 200,
       statusText: "OK",
     });
-  }
-  
-  private getTextPromptOrThrow(message: UIMessage): string {
-    const first = message.parts?.[0];
-    if (!first || first.type !== "text" || typeof first.text !== "string") {
-      throw new BadRequestException("Text message required");
-    }
-    return first.text;
   }
 }

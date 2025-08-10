@@ -4,8 +4,18 @@ import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 
 async function bootstrap() {
+  const originEnv = process.env.CORS_ORIGIN?.trim();
+  const parsedOrigin = (() => {
+    if (!originEnv) return true as const;
+    const parts = originEnv
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return parts.length > 1 ? parts : (parts[0] ?? true);
+  })();
+
   const app = await NestFactory.create(AppModule, {
-    cors: { origin: true, credentials: true },
+    cors: { origin: parsedOrigin, credentials: true },
   });
 
   app.setGlobalPrefix("api");

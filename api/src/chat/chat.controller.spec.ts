@@ -5,7 +5,6 @@ import {
   pipeUIMessageStreamToResponse,
   stepCountIs,
   streamText,
-  type UIMessage,
 } from "ai";
 import { ConfigService } from "@nestjs/config";
 import { response } from "express";
@@ -40,7 +39,10 @@ describe("ChatController", () => {
       providers: [
         {
           provide: ConfigService,
-          useValue: { get: jest.fn(() => "test-api-key") },
+          useValue: {
+            get: (k: string) =>
+              k === "OPENAI_API_KEY" ? "test-api-key" : undefined,
+          },
         },
         {
           provide: McpClientService,
@@ -54,7 +56,7 @@ describe("ChatController", () => {
   });
 
   it("streams with extracted prompt, tools, and previousResponseId", async () => {
-    const message: UIMessage = {
+    const message: UIMessageDto = {
       id: "1",
       role: "user",
       parts: [{ type: "text", text: "Hello world" }],
@@ -85,7 +87,7 @@ describe("ChatController", () => {
   });
 
   it("forwards socketId to tool registry", async () => {
-    const message: UIMessage = {
+    const message: UIMessageDto = {
       id: "2",
       role: "user",
       parts: [{ type: "text", text: "Play something" }],
@@ -94,3 +96,4 @@ describe("ChatController", () => {
     expect(mcpClient.listAllToolDefs).toHaveBeenCalled();
   });
 });
+import { UIMessageDto } from "./chat.dto";

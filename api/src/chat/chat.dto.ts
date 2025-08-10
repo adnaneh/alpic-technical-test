@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Transform } from "class-transformer";
 import {
   IsArray,
   IsDefined,
@@ -6,14 +6,21 @@ import {
   IsString,
   IsNotEmpty,
   ValidateNested,
-} from 'class-validator';
+  ArrayMinSize,
+  ArrayMaxSize,
+  Equals,
+  IsIn,
+  MinLength,
+} from "class-validator";
 
 export class UIPartDto {
   @IsString()
+  @Equals("text")
   type!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @MinLength(1)
   text!: string;
 }
 
@@ -23,9 +30,12 @@ export class UIMessageDto {
   id?: string;
 
   @IsString()
+  @IsIn(["user"])
   role!: string;
 
   @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(1)
   @ValidateNested({ each: true })
   @Type(() => UIPartDto)
   parts!: UIPartDto[];

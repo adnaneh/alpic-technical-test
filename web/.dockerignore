@@ -1,0 +1,11 @@
+# Prevent host artifacts from polluting the image
+node_modules
+.next
+coverage
+.git
+.DS_Store
+npm-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+**/*.test.*
+**/__tests__

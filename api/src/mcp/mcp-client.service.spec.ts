@@ -1,4 +1,5 @@
 import { McpClientService } from "./mcp-client.service";
+import type { ModelMessage } from "ai";
 import type {
   DiscoveredTool,
   ToolMetadata,
@@ -75,9 +76,9 @@ describe("McpClientService", () => {
 
     expect(Object.keys(defs).sort()).toEqual(["do_thing", "res"]);
 
-    const toolOpts: { toolCallId: string; messages: any[] } = {
+    const toolOpts: { toolCallId: string; messages: ModelMessage[] } = {
       toolCallId: "t1",
-      messages: [],
+      messages: [] as ModelMessage[],
     };
     await expect(defs["do_thing"].execute({ x: 1 }, toolOpts)).resolves.toBe(2);
     await expect(

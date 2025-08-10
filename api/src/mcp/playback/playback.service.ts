@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { Tool } from "@rekog/mcp-nest";
 import { PlaybackGateway } from "./playback.gateway";
 import { PlayParams, PauseParams, ResumeParams } from "./playback.schemas";
+import { z } from "zod";
 import type { ToolCallContext } from "../mcp-context";
 
 @Injectable()
@@ -14,9 +15,10 @@ export class PlaybackService {
     parameters: PlayParams,
   })
   async play(
-    { url = "", start_sec = 0 }: { url?: string; start_sec?: number },
+    params: Partial<z.infer<typeof PlayParams>>,
     ctx?: ToolCallContext,
   ) {
+    const { url = "", start_sec = 0 } = params ?? {};
     const safeUrl = String(url).trim();
     if (!safeUrl) throw new Error("url is required");
 
