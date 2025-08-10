@@ -34,11 +34,9 @@ describe('app/api/chat/route POST', () => {
     process.env.BACKEND_URL = 'http://upstream:3001';
 
     const fetchMock = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
-      // Expect that hop-by-hop headers are removed in forwarded request
       const h = new Headers(init?.headers);
       expect(h.has('connection')).toBe(false);
       expect(h.get('content-type')).toBe('application/json');
-      // Accept header is set if absent; here we do not set it in request so it should be present
       expect(h.get('accept')).toMatch(/text\/event-stream|\*\/*/);
 
       return new Response('ok', {

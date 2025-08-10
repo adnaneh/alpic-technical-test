@@ -24,7 +24,6 @@ describe('ToolPart', () => {
       screen.getAllByText((_, el) => Boolean(el?.textContent?.includes('List Books'))).length
     ).toBeGreaterThan(0);
     expect(screen.getByText('Preparing…')).toBeInTheDocument();
-    // input section shows JSON
     expect(screen.getByText(/"q": "hello"/)).toBeInTheDocument();
   });
 

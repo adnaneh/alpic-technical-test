@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import { render, cleanup } from '@testing-library/react';
 import { useSocketAudio } from './useSocketAudio';
 
-// Mock socket.io-client to capture handlers and socket instance
 const disconnectMock = vi.fn();
 const handlers: Record<string, Function> = {};
 
@@ -37,18 +36,15 @@ describe('useSocketAudio', () => {
 
     render(<TestSocketAudio audio={audio} />);
 
-    // Simulate play
     handlers['play']?.({ url: 'https://example.com/a.mp3', start_sec: 3 });
     expect(pauseMock).toHaveBeenCalled();
     expect(audio.src).toContain('https://example.com/a.mp3');
     expect(audio.currentTime).toBe(3);
     expect(playMock).toHaveBeenCalled();
 
-    // Simulate pause
     handlers['pause']?.();
     expect(pauseMock).toHaveBeenCalledTimes(2);
 
-    // Simulate resume
     handlers['resume']?.();
     expect(playMock).toHaveBeenCalledTimes(2);
   });

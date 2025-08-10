@@ -5,7 +5,7 @@ ENV NODE_ENV=production
 
 COPY package*.json ./
 
-RUN npm ci --omit=dev=false
+RUN npm install --omit=dev=false
 
 COPY . .
 

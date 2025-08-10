@@ -36,10 +36,9 @@ describe('useAutoScroll', () => {
     const container = screen.getByTestId('container');
     const end = screen.getByTestId('end');
 
-    // Mock geometry
     Object.defineProperty(container, 'scrollHeight', { value: 1200, configurable: true });
     Object.defineProperty(container, 'clientHeight', { value: 200, configurable: true });
-    let scrollTop = 1000; // near bottom (1200 - 1000 - 200 = 0 < 200)
+    let scrollTop = 1000;
     Object.defineProperty(container, 'scrollTop', {
       get: () => scrollTop,
       set: (v) => { scrollTop = Number(v); },
@@ -48,12 +47,10 @@ describe('useAutoScroll', () => {
 
     const spy = vi.spyOn(end, 'scrollIntoView').mockImplementation(() => {});
 
-    // Trigger scroll handler to mark stickToBottom = true
     act(() => {
       container.dispatchEvent(new Event('scroll'));
     });
 
-    // Change watch value -> should scroll
     act(() => setterRef.current(1));
     expect(spy).toHaveBeenCalled();
   });
@@ -67,7 +64,7 @@ describe('useAutoScroll', () => {
 
     Object.defineProperty(container, 'scrollHeight', { value: 2000, configurable: true });
     Object.defineProperty(container, 'clientHeight', { value: 200, configurable: true });
-    let scrollTop = 200; // far from bottom (2000 - 200 - 200 = 1600 > 200)
+    let scrollTop = 200;
     Object.defineProperty(container, 'scrollTop', {
       get: () => scrollTop,
       set: (v) => { scrollTop = Number(v); },
@@ -76,12 +73,10 @@ describe('useAutoScroll', () => {
 
     const spy = vi.spyOn(end, 'scrollIntoView').mockImplementation(() => {});
 
-    // Trigger scroll handler to mark stickToBottom = false
     act(() => {
       container.dispatchEvent(new Event('scroll'));
     });
 
-    // Change watch value -> should NOT scroll
     act(() => setterRef.current(2));
     expect(spy).not.toHaveBeenCalled();
   });

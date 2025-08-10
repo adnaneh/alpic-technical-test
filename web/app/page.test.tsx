@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 
-// Mock useChat from @ai-sdk/react
 const sendMessage = vi.fn();
 let mockStatus: 'idle' | 'submitted' | 'streaming' | 'error' = 'idle';
 let mockMessages: unknown[] = [];
@@ -16,12 +15,10 @@ vi.mock('@ai-sdk/react', () => ({
   }),
 }));
 
-// DefaultChatTransport is imported in the component; provide a stub to avoid side-effects
 vi.mock('ai', () => ({
   DefaultChatTransport: class {},
 }));
 
-// Ensure UI is enabled by faking a connected socket
 vi.mock('./hooks/useSocketAudio', () => ({
   useSocketAudio: () => 'sock-1',
 }));
@@ -51,7 +48,6 @@ describe('Home page', () => {
     const input = screen.getByPlaceholderText('Ask anything');
     const button = screen.getByRole('button', { name: 'Send' });
 
-    // Type and submit
     fireEvent.change(input, { target: { value: 'Hello world' } });
     fireEvent.submit(button.closest('form')!);
 
@@ -61,7 +57,6 @@ describe('Home page', () => {
     });
     expect(input).toHaveValue('');
 
-    // Simulate loading and re-render
     mockStatus = 'streaming';
     cleanup();
     render(<Home />);

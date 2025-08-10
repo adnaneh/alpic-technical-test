@@ -1,4 +1,3 @@
-/** @type {import('jest').Config} */
 module.exports = {
   displayName: 'unit',
   moduleFileExtensions: ['js', 'json', 'ts'],
@@ -11,4 +10,3 @@ module.exports = {
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
 };
-

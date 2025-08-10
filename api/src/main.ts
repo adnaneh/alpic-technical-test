@@ -5,7 +5,6 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    // Reflect request origin when credentials are used
     cors: { origin: true, credentials: true },
   });
 

@@ -15,7 +15,6 @@ import {
 } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 
-// Mock external SDKs to avoid real network/streaming
 jest.mock("@ai-sdk/openai", () => ({
   createOpenAI: jest.fn(() => ({ responses: jest.fn(() => "mock-model") })),
 }));
@@ -42,7 +41,6 @@ jest.mock("ai", () => {
       status?: number;
       statusText?: string;
     }) => {
-      // Reference statusText to satisfy noUnused parameters in TS config
       if (statusText) {
         response.set("X-Status-Text", statusText);
       }
@@ -121,7 +119,7 @@ maybeDescribe("ChatController (e2e)", () => {
     expect(pipeUIMessageStreamToResponse).toHaveBeenCalled();
   });
 
-  it("POST /chat uses empty prompt for non-text", async () => {
+  it("POST /chat rejects non-text message with 400", async () => {
     const message: UIMessage = {
       id: "m-2",
       role: "user",
@@ -131,9 +129,6 @@ maybeDescribe("ChatController (e2e)", () => {
     await request(app.getHttpServer())
       .post("/chat")
       .send({ message })
-      .expect(200);
-    expect(streamText).toHaveBeenCalledWith(
-      expect.objectContaining({ prompt: "" }),
-    );
+      .expect(400);
   });
 });

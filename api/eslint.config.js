@@ -1,5 +1,4 @@
 module.exports = [
-  // Default rules for API source files
   {
     files: ["**/*.ts"],
     ignores: ["dist/**"],
@@ -18,12 +17,10 @@ module.exports = [
       "@typescript-eslint/interface-name-prefix": "off",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
-      // Forbid explicit `any` across the API codebase
       "@typescript-eslint/no-explicit-any": "error",
     },
   },
 
-  // Override for E2E tests to use their own tsconfig
   {
     files: ["test/**/*.ts"],
     languageOptions: {
@@ -38,7 +35,6 @@ module.exports = [
       "@typescript-eslint": require("@typescript-eslint/eslint-plugin"),
     },
     rules: {
-      // Tests often have unused params or variables for clarity
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": "off",
     },

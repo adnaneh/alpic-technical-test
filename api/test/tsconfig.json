@@ -4,7 +4,6 @@
     "noEmit": true,
     "rootDir": "../",
     "types": ["jest", "node", "supertest"],
-    // Tests often use placeholders and unused params
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },

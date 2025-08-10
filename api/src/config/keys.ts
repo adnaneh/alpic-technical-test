@@ -1,0 +1,4 @@
+export const CFG_OPENAI_API_KEY = "OPENAI_API_KEY";
+export const CFG_OPENAI_MODEL = "OPENAI_MODEL";
+export const CFG_CHAT_MAX_STEPS = "CHAT_MAX_STEPS";
+

@@ -47,7 +47,6 @@ export default function Home() {
   });
 
   const loading = status === "submitted" || status === "streaming";
-  // Watch only message count and status to avoid re-running on every render
   useAutoScroll(containerRef, endRef, [messages.length, status]);
 
   const starters = useMemo(() => [

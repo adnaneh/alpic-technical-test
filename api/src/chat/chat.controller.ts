@@ -14,6 +14,7 @@ import type { UIMessage } from "ai";
 
 import { McpClientService } from "../mcp/mcp-client.service";
 import { ChatRequestDto } from "./dto/chat-request.dto";
+import { CFG_CHAT_MAX_STEPS, CFG_OPENAI_API_KEY, CFG_OPENAI_MODEL } from "../config/keys";
 
 const SYSTEM_PROMPT = `
 You are an AI assistant with audiobook controls.
@@ -45,21 +46,15 @@ export class ChatController {
   @ApiResponse({ status: 200, description: "Server-sent event stream" })
   @ApiResponse({ status: 400, description: "Invalid request format" })
   async chat(@Body() body: ChatRequestDto, @Res() res: Response) {
-    if (!body || typeof body.socketId !== "string" || !body.message) {
-      throw new BadRequestException("message and socketId are required");
-    }
-    const apiKey = this.cfg.get<string>("OPENAI_API_KEY");
+    const openai = createOpenAI({ apiKey: this.cfg.get<string>(CFG_OPENAI_API_KEY) });
+    const model = openai.responses(this.cfg.get<string>(CFG_OPENAI_MODEL) ?? "gpt-4o");
+    const maxSteps = Math.max(1, Number(this.cfg.get(CFG_CHAT_MAX_STEPS)) || 10);
     const tools = this.mcpClient.listAllToolDefs({ socketId: body.socketId });
-    const openai = createOpenAI({ apiKey });
-    const modelName = this.cfg.get<string>("OPENAI_MODEL") || "gpt-4o";
-    const stepsRaw = this.cfg.get<string>("CHAT_MAX_STEPS");
-    const stepsNum = stepsRaw !== undefined ? Number(stepsRaw) : 10;
-    const maxSteps = Number.isFinite(stepsNum) && stepsNum > 0 ? Math.floor(stepsNum) : 10;
 
-    const prompt = this.extractTextPrompt(body.message);
+    const prompt = this.getTextPromptOrThrow(body.message);
 
     const stream = streamText({
-      model: openai.responses(modelName),
+      model,
       system: SYSTEM_PROMPT,
       prompt,
       tools,
@@ -88,11 +83,11 @@ export class ChatController {
     });
   }
   
-  private extractTextPrompt(message: UIMessage): string {
+  private getTextPromptOrThrow(message: UIMessage): string {
     const first = message.parts?.[0];
-    if (first && first.type === "text" && typeof first.text === "string") {
-      return first.text;
+    if (!first || first.type !== "text" || typeof first.text !== "string") {
+      throw new BadRequestException("Text message required");
     }
-    return "";
+    return first.text;
   }
 }
