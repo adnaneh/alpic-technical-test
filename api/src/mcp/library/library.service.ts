@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Tool } from '@rekog/mcp-nest';
+import { Tool, Resource } from '@rekog/mcp-nest';
 import { BOOKS } from './catalogue.data';
 import { z } from 'zod';
 import {
   ListChaptersParams,
   GetChapterAudioParams,
-  ListBooksParams,
+  // ListBooksParams,  // no longer needed for a resource
 } from './library.schemas';
 
 @Injectable()
@@ -33,12 +33,15 @@ export class LibraryService {
     return { url: book.audio_url, start_sec: chapter.start_sec };
   }
 
-  @Tool({
-    name: 'list_books',
-    description: 'Get the complete library catalog without chapters',
-    parameters: ListBooksParams,
+  // >>> listBooks is now a Resource (no params, read-only) <<<
+  @Resource({
+    uri: 'mcp://library/books',            // unique, stable identifier
+    name: 'Library Catalog (Books)',
+    description: 'Complete library catalog without chapters',
+    mimeType: 'application/json',
   })
   listBooks() {
+    // Return the content that should be served when the MCP client reads this resource
     return BOOKS.map(({ book_id, title, author, audio_url }) => ({
       book_id,
       title,

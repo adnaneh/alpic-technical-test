@@ -41,7 +41,8 @@ export default function Home() {
   });
 
   const loading = status === "submitted" || status === "streaming";
-  useAutoScroll(containerRef, endRef, [messages, status]);
+  // Watch only message count and status to avoid re-running on every render
+  useAutoScroll(containerRef, endRef, [messages.length, status]);
   useSocketAudio(audioRef);
 
   const starters = useMemo(() => [
@@ -65,7 +66,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-col h-screen p-4 gap-4">
-      {/* messages */}
+      
       <section ref={containerRef} className="flex-1 overflow-y-auto space-y-4">
         {messages.length === 0 && (
           <div className="space-y-3">
@@ -91,13 +92,13 @@ export default function Home() {
         <div ref={endRef} />
       </section>
 
-      {/* audio */}
+      
       <section className="bg-gray-50 p-4 rounded">
         <audio ref={audioRef} controls className="w-full" preload="none" />
         <p className="text-sm text-gray-600 mt-2">🎵 Audio player — controlled by chat</p>
       </section>
 
-      {/* input */}
+      
       <form onSubmit={onSubmit} className="flex gap-2">
         <input
           value={input}

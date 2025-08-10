@@ -6,6 +6,6 @@ import { PlaybackServerModule } from './playback/playback-server.module';
 @Module({
   imports: [LibraryServerModule, PlaybackServerModule],
   providers: [McpClientService],
-  exports: [McpClientService, LibraryServerModule, PlaybackServerModule],
+  exports: [McpClientService],
 })
 export class McpModule {}

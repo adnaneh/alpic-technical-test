@@ -1,26 +1,18 @@
-# Single stage build to reduce memory usage
 FROM node:20-alpine
 
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Copy package.json first
-COPY package.json ./
+COPY package*.json ./
 
-# Install dependencies with memory limit
-RUN NODE_OPTIONS="--max-old-space-size=512" npm install --verbose
+RUN npm ci --omit=dev=false
 
-# Copy source code
 COPY . .
 
-# No build-time env vars needed since we're using server-side proxy
-
-# Build Next.js app
 RUN NODE_OPTIONS="--max-old-space-size=512" npm run build
 
-# Remove dev dependencies (but keep http-proxy for runtime)
-RUN npm prune --production
+RUN npm prune --omit=dev
 
 EXPOSE 3000
 
-# Use the custom server that handles WebSocket proxying
-CMD ["node", "server.js"]
+CMD ["node", "dist/server.js"]

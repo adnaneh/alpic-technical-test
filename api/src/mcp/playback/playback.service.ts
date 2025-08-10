@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { PlaybackGateway } from './playback.gateway';
 import {
@@ -9,8 +9,6 @@ import {
 
 @Injectable()
 export class PlaybackService {
-  private readonly log = new Logger(PlaybackService.name);
-
   constructor(private readonly gateway: PlaybackGateway) {}
 
   @Tool({

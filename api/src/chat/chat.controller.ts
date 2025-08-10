@@ -51,6 +51,7 @@ export class ChatController {
   async chat(@Body() body: ChatRequestBody, @Res() res: Response) {
     const apiKey = this.cfg.get<string>('OPENAI_API_KEY');
     const tools = this.mcpClient.listAllToolDefs();
+    console.log('Available tools:', Object.keys(tools));
     const openai = createOpenAI({ apiKey });
 
     const prompt = body?.message?.parts?.[0]?.type === "text" ? body.message.parts[0].text : "";

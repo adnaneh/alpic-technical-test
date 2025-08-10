@@ -1,48 +1,50 @@
-// mcp-client.service.ts
 import { Injectable } from "@nestjs/common";
 import { ModuleRef } from "@nestjs/core";
-import { z } from "zod";
-import type { Tool } from "ai";
-import {
-  McpRegistryService,
-  ToolMetadata,
-  DiscoveredTool,
-} from "@rekog/mcp-nest";
-import { LIBRARY_MCP_MODULE_ID } from "./library/library-server.module";
-import { PLAYBACK_MCP_MODULE_ID } from "./playback/playback-server.module";
+import { type Tool } from "ai";
+import { ToolMetadata, DiscoveredTool, ResourceMetadata } from "@rekog/mcp-nest";
+import { PlaybackMcpClientService } from "./playback/playback.mcp-client.service";
+import { LibraryMcpClientService } from "./library/library.mcp-client.service";
+import z from "zod";
 
 @Injectable()
 export class McpClientService {
-  private readonly mcpModuleIds = [LIBRARY_MCP_MODULE_ID, PLAYBACK_MCP_MODULE_ID];
-
   constructor(
-    private readonly registry: McpRegistryService,
-    private readonly moduleRef: ModuleRef
+    private readonly moduleRef: ModuleRef,
+    private readonly playbackTools: PlaybackMcpClientService,
+    private readonly libraryTools: LibraryMcpClientService
   ) {}
 
-  /** Build a name->Tool map with real `execute` bound to service methods. */
   listAllToolDefs(): Record<string, Tool> {
-    const defs: Record<string, Tool> = {};
+    const toolDefs: Record<string, Tool> = {};
 
-    for (const moduleId of this.mcpModuleIds) {
-      const discovered = this.registry.getTools(moduleId);
+    const playbackDiscovered = this.playbackTools.getTools();
+    const libraryDiscovered = this.libraryTools.getTools();
+    const playbackResources = this.playbackTools.getResources();
+    const libraryResources = this.libraryTools.getResources();
+    const allTools = [
+      ...playbackDiscovered,
+      ...libraryDiscovered,
+      ...playbackResources,
+      ...libraryResources,
+    ];
 
-      for (const t of discovered) {
-        defs[t.metadata.name] = this.bindTool(moduleId, t);
-      }
+    for (const t of allTools) {
+      toolDefs[t.metadata.name] = this.bindTool(t);
     }
 
-    return defs;
+    return toolDefs;
   }
 
-  private bindTool(moduleId: string, t: DiscoveredTool<ToolMetadata>): Tool {
-    const found: { providerClass: any; methodName: string } =
-      this.registry.findTool(moduleId, t.metadata.name);
+  private bindTool(
+    t: DiscoveredTool<ToolMetadata | ResourceMetadata>
+  ): Tool {
+    const instance = this.moduleRef.get(t.providerClass, { strict: false });
+    const fn = instance?.[t.methodName];
 
-    const instance = this.moduleRef.get(found.providerClass, { strict: false });
-    const fn = instance?.[found.methodName];
-
-    const inputSchema = t.metadata.parameters ?? z.object({});
+    const inputSchema =
+      'parameters' in (t.metadata as any) && (t.metadata as any).parameters
+        ? (t.metadata as any).parameters
+        : z.object({});
 
     return {
       description: t.metadata.description,

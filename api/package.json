@@ -35,7 +35,7 @@
     "@nestjs/websockets": "^11.1.5",
     "@rekog/mcp-nest": "^1.7.3",
     "@types/jsonwebtoken": "^9.0.10",
-    "ai": "^5.0.5",
+    "ai": "^5.0.9",
     "axios": "^1.11.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
@@ -47,7 +47,6 @@
     "rxjs": "^7.8.2",
     "socket.io": "^4.8.1",
     "typeorm": "^0.3.25",
-    "zod": "^4.0.15",
     "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
@@ -73,7 +72,8 @@
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.3",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "zod": "^3.25.67"
   },
   "jest": {
     "moduleFileExtensions": [

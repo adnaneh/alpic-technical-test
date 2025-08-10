@@ -13,7 +13,6 @@ logs/
 *.d.ts
 !*.config.d.ts
 *.tsbuildinfo
-package-lock.json
 .dev-pids
 audiobook.m4a
 *.m4a

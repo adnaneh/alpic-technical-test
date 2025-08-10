@@ -3,13 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node server.js",
-    "dev:next": "next dev --turbopack",
-    "build": "next build",
-    "start": "NODE_ENV=production node server.js",
-    "start:next": "next start",
-    "lint": "next lint",
-    "generate-api": "tsx generate-api.ts"
+    "dev": "tsx server.ts",
+    "build": "next build && tsc -p tsconfig.server.json",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.4",
@@ -24,6 +20,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.11",
+    "@types/http-proxy": "^1.17.16",
     "@types/node": "^24.2.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",

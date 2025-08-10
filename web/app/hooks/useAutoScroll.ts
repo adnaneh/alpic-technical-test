@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export function useAutoScroll<T extends readonly unknown[]>(
   containerRef: React.RefObject<HTMLElement | null>,
   endRef: React.RefObject<HTMLElement | null>,
-  deps: T
+  watch: T
 ) {
   const [stickToBottom, setStickToBottom] = useState(true);
 
@@ -24,5 +24,5 @@ export function useAutoScroll<T extends readonly unknown[]>(
 
   useEffect(() => {
     if (stickToBottom) endRef.current?.scrollIntoView({ behavior: "auto" });
-  }, [stickToBottom, endRef, ...deps]);
+  }, [stickToBottom, endRef, watch]);
 }

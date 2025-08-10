@@ -1,7 +1,7 @@
 "use client";
 
 import ReactMarkdown from "react-markdown";
-import { isToolUIPart, type ToolUIPart } from "ai";
+import { isToolUIPart } from "ai";
 import { ToolPart } from "./ToolPart";
 import { type UIMessage } from "@ai-sdk/react";
 
