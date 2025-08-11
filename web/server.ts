@@ -46,9 +46,11 @@ function resolveWsTarget(): { target: string; source: TargetSource; warnings: st
   try {
     const u = new URL(target);
     if (u.hostname.endsWith(".railway.internal") && !u.port) {
-      u.port = "3001";
+      const hintedPort = process.env.INTERNAL_API_PORT?.trim() || "3000";
+      u.port = hintedPort;
       const updated = u.toString().replace(/\/$/, "");
-      warnings.push(`No port specified for railway.internal; using :3001 -> ${updated}`);
+      const src = process.env.INTERNAL_API_PORT ? `INTERNAL_API_PORT=${hintedPort}` : `default :${hintedPort}`;
+      warnings.push(`No port specified for railway.internal; using ${src} -> ${updated}`);
       target = updated;
     }
     if (process.env.NODE_ENV === "production" && u.protocol === "http:") {
