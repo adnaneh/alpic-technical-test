@@ -21,7 +21,7 @@ const stripHopByHop = (h: Headers) => {
 };
 
 export async function POST(req: NextRequest) {
-  const backend = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_URL;
+  const backend = process.env.INTERNAL_API_URL;
   if (!backend) {
     console.error("BACKEND_URL is not set");
     return NextResponse.json({ error: "Backend service is not configured" }, { status: 503 });
