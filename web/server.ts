@@ -25,18 +25,32 @@ function resolveWsTarget(): { target: string; source: TargetSource; warnings: st
 
   const warnings: string[] = [];
   const chosen = candidates.find((c) => !!c.value);
-  const target = chosen?.value?.trim() || "http://localhost:3001";
+  const raw = chosen?.value?.trim();
+  let target = raw || "http://localhost:3001";
   const source: TargetSource = chosen?.key || "DEFAULT";
 
-  if (source === "DEFAULT") {
-    warnings.push(
-      "No WS target env provided; falling back to http://localhost:3001",
-    );
+  // If a target was provided but lacks a scheme, normalize it.
+  const hasScheme = !!raw?.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//);
+  if (raw && !hasScheme) {
+    const preferHttp = /\.railway\.internal(?::\d+)?(\/|$)/.test(raw) || /localhost/.test(raw);
+    const defaultProto = preferHttp
+      ? "http://"
+      : process.env.NODE_ENV === "production"
+        ? "https://"
+        : "http://";
+    target = `${defaultProto}${raw}`;
+    warnings.push(`Normalized WS target by adding scheme: ${target}`);
   }
 
   // Basic sanity checks and hints
   try {
     const u = new URL(target);
+    if (u.hostname.endsWith(".railway.internal") && !u.port) {
+      u.port = "3001";
+      const updated = u.toString().replace(/\/$/, "");
+      warnings.push(`No port specified for railway.internal; using :3001 -> ${updated}`);
+      target = updated;
+    }
     if (process.env.NODE_ENV === "production" && u.protocol === "http:") {
       warnings.push(
         `Using plain http for WS target in production: ${target}. If your backend is behind HTTPS, prefer https:// to avoid upgrade/redirect issues.`,
@@ -44,6 +58,12 @@ function resolveWsTarget(): { target: string; source: TargetSource; warnings: st
     }
   } catch {
     warnings.push(`WS target is not a valid URL: ${target}`);
+  }
+
+  if (source === "DEFAULT") {
+    warnings.push(
+      "No WS target env provided; falling back to http://localhost:3001",
+    );
   }
 
   return { target, source, warnings };
