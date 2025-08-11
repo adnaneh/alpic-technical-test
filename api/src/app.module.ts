@@ -1,10 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { ChatModule } from "./chat/chat.module";
 import { LibraryServerModule } from "./mcp/library/library-server.module";
 import { PlaybackServerModule } from "./mcp/playback/playback-server.module";
 import { validateEnv } from "./config/env.validation";
-import { RequestIdMiddleware } from "./common/request-id.middleware";
 
 @Module({
   imports: [
@@ -14,8 +13,4 @@ import { RequestIdMiddleware } from "./common/request-id.middleware";
     PlaybackServerModule,
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestIdMiddleware).forRoutes("*");
-  }
-}
+export class AppModule {}

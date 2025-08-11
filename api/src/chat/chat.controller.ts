@@ -1,7 +1,7 @@
-import { Body, Controller, Logger, Post, Req, Res } from "@nestjs/common";
+import { Body, Controller, Post, Res } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { ConfigService } from "@nestjs/config";
-import { Request, Response } from "express";
+import { Response } from "express";
 
 import { createOpenAI } from "@ai-sdk/openai";
 import {
@@ -45,25 +45,22 @@ export class ChatController {
     private readonly cfg: ConfigService,
     private readonly mcpClient: McpClientService
   ) {}
-  private readonly logger = new Logger(ChatController.name);
 
   @Post("chat")
   @ApiOperation({ summary: "AI chat endpoint (streaming)" })
   @ApiResponse({ status: 200, description: "Server-sent event stream" })
   @ApiResponse({ status: 400, description: "Invalid request format" })
-  async chat(@Body() body: ChatRequestDto, @Req() req: Request, @Res() res: Response) {
+  async chat(@Body() body: ChatRequestDto, @Res() res: Response) {
     const openai = createOpenAI({
       apiKey: this.cfg.get<string>(CFG_OPENAI_API_KEY),
     });
-    const model = openai.responses(modelName);
+    const model = openai.responses(
+      this.cfg.get<string>(CFG_OPENAI_MODEL) ?? "gpt-4o"
+    );
     const maxSteps = Number(this.cfg.get(CFG_CHAT_MAX_STEPS)) || 10;
     const tools = this.mcpClient.listAllToolDefs({ socketId: body.socketId });
 
     const prompt = body.message.parts[0].text;
-
-    this.logger.log(
-      `${req.id ? `[${req.id}] ` : ""}chat start model=${modelName} maxSteps=${maxSteps} socketId=${body.socketId ?? "-"}`,
-    );
 
     const stream = streamText({
       model,
@@ -90,9 +87,6 @@ export class ChatController {
         const responseId = metadata?.openai?.responseId;
         if (responseId) {
           writer.write({ type: "data-response-id", data: { responseId } });
-          const requestId = req.id;
-          const prefix = requestId ? `[${requestId}] ` : "";
-          this.logger.log(`${prefix}Response ID: ${responseId}`);
         }
       },
     });
