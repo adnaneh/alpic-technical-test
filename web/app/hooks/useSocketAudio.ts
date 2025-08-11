@@ -9,11 +9,7 @@ export function useSocketAudio(
   const [socketId, setSocketId] = useState<string | null>(null);
 
   useEffect(() => {
-    const baseUrl = process.env.NEXT_PUBLIC_WS_URL || "/";
-    const socket = io(baseUrl, {
-      path: "/socket.io",
-      transports: ["websocket", "polling"],
-    });
+    const socket = io("/", { path: "/socket.io/", transports: ["websocket", "polling"] });
 
     socket.on("connect", () => setSocketId(socket.id ?? null));
     socket.on("disconnect", () => setSocketId(null));
