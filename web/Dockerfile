@@ -26,8 +26,18 @@ RUN set -eux; \
       *) echo "Unknown arch: $arch; skipping lightningcss native add-on pin" ;; \
     esac
 
+# Ensure Tailwind Oxide native binding is present for the architecture
+ARG TARGETARCH
+RUN set -eux; \
+    arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
+    case "$arch" in \
+      amd64) npm install @tailwindcss/oxide-linux-x64-gnu --no-save || true ;; \
+      arm64) npm install @tailwindcss/oxide-linux-arm64-gnu --no-save || true ;; \
+      *) echo "Unknown arch: $arch; skipping oxide native add-on" ;; \
+    esac
+
 # Ensure PostCSS build plugins are present even if dev deps are omitted
-RUN npm install @tailwindcss/postcss@^4 postcss@^8 autoprefixer@^10 --no-save
+# PostCSS/Tailwind plugins are regular dependencies now
 
 COPY . .
 
