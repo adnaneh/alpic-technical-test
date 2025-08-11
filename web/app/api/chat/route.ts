@@ -20,45 +20,21 @@ const stripHopByHop = (h: Headers) => {
   return out;
 };
 
-function resolveBackend(): { url: string | null; warnings: string[] } {
-  const env = process.env as Record<string, string | undefined>;
-  const candidates: { key: string; value?: string }[] = [
-    { key: "INTERNAL_API_URL", value: env["INTERNAL_API_URL"] },
-    { key: "NEXT_PUBLIC_API_URL", value: env["NEXT_PUBLIC_API_URL"] },
-    { key: "BACKEND_URL", value: env["BACKEND_URL"] },
-  ];
+function resolveBackendApi(): { url: string | null; warnings: string[] } {
   const warnings: string[] = [];
-  const chosen = candidates.find((c) => !!c.value);
-  const raw = chosen?.value?.trim();
+  const raw = process.env.INTERNAL_API_URL?.trim();
   if (!raw) return { url: null, warnings };
-
-  let target = raw;
-  const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(raw);
-  if (!hasScheme) {
-    const preferHttp = /\.railway\.internal(?::\d+)?(\/|$)/.test(raw) || /localhost/.test(raw);
-    const proto = preferHttp ? "http://" : (process.env.NODE_ENV === "production" ? "https://" : "http://");
-    target = `${proto}${raw}`;
-    warnings.push(`Normalized backend by adding scheme: ${target}`);
-  }
   try {
-    const u = new URL(target);
-    if (u.hostname.endsWith(".railway.internal") && !u.port) {
-      const hintedPort = (env["INTERNAL_API_PORT"] || "3000").trim();
-      u.port = hintedPort;
-      const updated = u.toString().replace(/\/$/, "");
-      const src = env["INTERNAL_API_PORT"] ? `INTERNAL_API_PORT=${hintedPort}` : `default :${hintedPort}`;
-      warnings.push(`No port specified for railway.internal; using ${src} -> ${updated}`);
-      target = updated;
-    }
+    new URL(raw);
+    return { url: raw, warnings };
   } catch {
-    warnings.push(`Backend URL is invalid: ${target}`);
+    warnings.push(`Invalid INTERNAL_API_URL: ${raw}`);
     return { url: null, warnings };
   }
-  return { url: target, warnings };
 }
 
 export async function POST(req: NextRequest) {
-  const { url: backend, warnings } = resolveBackend();
+  const { url: backend, warnings } = resolveBackendApi();
   if (!backend) {
     console.error("Backend URL is not set or invalid");
     for (const w of warnings) console.warn(w);
@@ -72,7 +48,8 @@ export async function POST(req: NextRequest) {
     fwd.set("content-type", "application/json");
     if (!fwd.has("accept")) fwd.set("accept", "text/event-stream, application/x-ndjson, */*");
 
-    const upstream = await fetch(`${backend}/api/chat`, { method: "POST", headers: fwd, body });
+    const target = new URL("/api/chat", backend).toString();
+    const upstream = await fetch(target, { method: "POST", headers: fwd, body });
 
     const resHeaders = stripHopByHop(new Headers(upstream.headers));
     resHeaders.delete("content-encoding");

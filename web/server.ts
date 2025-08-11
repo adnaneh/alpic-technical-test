@@ -7,71 +7,19 @@ const dev: boolean = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-type TargetSource =
-  | "INTERNAL_API_URL"
-  | "NEXT_PUBLIC_WS_URL"
-  | "NEXT_PUBLIC_API_URL"
-  | "BACKEND_URL"
-  | "DEFAULT";
-
-function resolveWsTarget(): { target: string; source: TargetSource; warnings: string[] } {
-  const env = process.env;
-  const candidates: { key: TargetSource; value: string | undefined }[] = [
-    { key: "INTERNAL_API_URL", value: env.INTERNAL_API_URL },
-    { key: "NEXT_PUBLIC_WS_URL", value: env.NEXT_PUBLIC_WS_URL },
-    { key: "NEXT_PUBLIC_API_URL", value: env.NEXT_PUBLIC_API_URL },
-    { key: "BACKEND_URL", value: env.BACKEND_URL },
-  ];
-
-  const warnings: string[] = [];
-  const chosen = candidates.find((c) => !!c.value);
-  const raw = chosen?.value?.trim();
-  let target = raw || "http://localhost:3001";
-  const source: TargetSource = chosen?.key || "DEFAULT";
-
-  // If a target was provided but lacks a scheme, normalize it.
-  const hasScheme = !!raw?.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//);
-  if (raw && !hasScheme) {
-    const preferHttp = /\.railway\.internal(?::\d+)?(\/|$)/.test(raw) || /localhost/.test(raw);
-    const defaultProto = preferHttp
-      ? "http://"
-      : process.env.NODE_ENV === "production"
-        ? "https://"
-        : "http://";
-    target = `${defaultProto}${raw}`;
-    warnings.push(`Normalized WS target by adding scheme: ${target}`);
-  }
-
-  // Basic sanity checks and hints
+function getWsTarget(): string {
+  const raw = process.env.INTERNAL_API_URL?.trim();
+  if (!raw) return "http://localhost:3001";
   try {
-    const u = new URL(target);
-    if (u.hostname.endsWith(".railway.internal") && !u.port) {
-      const hintedPort = process.env.INTERNAL_API_PORT?.trim() || "3000";
-      u.port = hintedPort;
-      const updated = u.toString().replace(/\/$/, "");
-      const src = process.env.INTERNAL_API_PORT ? `INTERNAL_API_PORT=${hintedPort}` : `default :${hintedPort}`;
-      warnings.push(`No port specified for railway.internal; using ${src} -> ${updated}`);
-      target = updated;
-    }
-    if (process.env.NODE_ENV === "production" && u.protocol === "http:") {
-      warnings.push(
-        `Using plain http for WS target in production: ${target}. If your backend is behind HTTPS, prefer https:// to avoid upgrade/redirect issues.`,
-      );
-    }
+    new URL(raw);
+    return raw;
   } catch {
-    warnings.push(`WS target is not a valid URL: ${target}`);
+    console.warn(`Invalid INTERNAL_API_URL: ${raw}. Falling back to http://localhost:3001`);
+    return "http://localhost:3001";
   }
-
-  if (source === "DEFAULT") {
-    warnings.push(
-      "No WS target env provided; falling back to http://localhost:3001",
-    );
-  }
-
-  return { target, source, warnings };
 }
 
-const { target: WS_TARGET, source: WS_SOURCE, warnings: WS_WARNINGS } = resolveWsTarget();
+const WS_TARGET = getWsTarget();
 const isSocketIO = (url: string): boolean =>
   url === "/socket.io" || url.startsWith("/socket.io/");
 
@@ -127,12 +75,7 @@ app.prepare().then(() => {
 
   const port: number = Number(process.env.PORT ?? 3000);
   server.listen(port, () => {
-    console.log(`> Ready on http://localhost:${port}`);
-    console.log(
-      `> Proxying /socket.io to ${WS_TARGET} (source: ${WS_SOURCE})`,
-    );
-    if (WS_WARNINGS.length) {
-      for (const w of WS_WARNINGS) console.warn(`> WS config warning: ${w}`);
-    }
+    const env = process.env.NODE_ENV || "development";
+    console.log(`> Ready on port ${port} [${env}] — WS target: ${WS_TARGET}`);
   });
 });
