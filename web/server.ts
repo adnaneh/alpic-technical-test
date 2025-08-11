@@ -7,11 +7,49 @@ const dev: boolean = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-const WS_TARGET: string =
-  process.env.NEXT_PUBLIC_WS_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.INTERNAL_API_URL ||
-  "http://localhost:3001";
+type TargetSource =
+  | "INTERNAL_API_URL"
+  | "NEXT_PUBLIC_WS_URL"
+  | "NEXT_PUBLIC_API_URL"
+  | "BACKEND_URL"
+  | "DEFAULT";
+
+function resolveWsTarget(): { target: string; source: TargetSource; warnings: string[] } {
+  const env = process.env;
+  const candidates: { key: TargetSource; value: string | undefined }[] = [
+    { key: "INTERNAL_API_URL", value: env.INTERNAL_API_URL },
+    { key: "NEXT_PUBLIC_WS_URL", value: env.NEXT_PUBLIC_WS_URL },
+    { key: "NEXT_PUBLIC_API_URL", value: env.NEXT_PUBLIC_API_URL },
+    { key: "BACKEND_URL", value: env.BACKEND_URL },
+  ];
+
+  const warnings: string[] = [];
+  const chosen = candidates.find((c) => !!c.value);
+  const target = chosen?.value?.trim() || "http://localhost:3001";
+  const source: TargetSource = chosen?.key || "DEFAULT";
+
+  if (source === "DEFAULT") {
+    warnings.push(
+      "No WS target env provided; falling back to http://localhost:3001",
+    );
+  }
+
+  // Basic sanity checks and hints
+  try {
+    const u = new URL(target);
+    if (process.env.NODE_ENV === "production" && u.protocol === "http:") {
+      warnings.push(
+        `Using plain http for WS target in production: ${target}. If your backend is behind HTTPS, prefer https:// to avoid upgrade/redirect issues.`,
+      );
+    }
+  } catch {
+    warnings.push(`WS target is not a valid URL: ${target}`);
+  }
+
+  return { target, source, warnings };
+}
+
+const { target: WS_TARGET, source: WS_SOURCE, warnings: WS_WARNINGS } = resolveWsTarget();
 const isSocketIO = (url: string): boolean =>
   url === "/socket.io" || url.startsWith("/socket.io/");
 
@@ -68,6 +106,11 @@ app.prepare().then(() => {
   const port: number = Number(process.env.PORT ?? 3000);
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
-    console.log(`> Proxying /socket.io to ${WS_TARGET}`);
+    console.log(
+      `> Proxying /socket.io to ${WS_TARGET} (source: ${WS_SOURCE})`,
+    );
+    if (WS_WARNINGS.length) {
+      for (const w of WS_WARNINGS) console.warn(`> WS config warning: ${w}`);
+    }
   });
 });
