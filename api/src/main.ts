@@ -6,7 +6,10 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 async function bootstrap() {
   const originEnv = process.env.CORS_ORIGIN?.trim();
   const parsedOrigin = (() => {
-    if (!originEnv) return true as const;
+    if (!originEnv) {
+      
+      return process.env.NODE_ENV === "production" ? [] : true;
+    }
     const parts = originEnv
       .split(",")
       .map((s) => s.trim())

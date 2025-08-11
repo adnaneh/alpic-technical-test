@@ -49,7 +49,12 @@ export async function POST(req: NextRequest) {
     if (!fwd.has("accept")) fwd.set("accept", "text/event-stream, application/x-ndjson, */*");
 
     const target = new URL("/api/chat", backend).toString();
-    const upstream = await fetch(target, { method: "POST", headers: fwd, body });
+    const upstream = await fetch(target, {
+      method: "POST",
+      headers: fwd,
+      body,
+      signal: req.signal,
+    });
 
     const resHeaders = stripHopByHop(new Headers(upstream.headers));
     resHeaders.delete("content-encoding");
