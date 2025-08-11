@@ -1,18 +1,8 @@
 import { WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server } from "socket.io";
+import { getCorsOrigin } from "../../config/cors";
 
-
-const ORIGIN_ENV = process.env.CORS_ORIGIN?.trim();
-const WS_ORIGIN = (() => {
-  if (!ORIGIN_ENV) {
-    return process.env.NODE_ENV === "production" ? [] : true;
-  }
-  const parts = ORIGIN_ENV
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  return parts.length > 1 ? parts : (parts[0] ?? true);
-})();
+const WS_ORIGIN = getCorsOrigin();
 
 @WebSocketGateway({ cors: { origin: WS_ORIGIN }, path: "/socket.io" })
 export class PlaybackGateway {

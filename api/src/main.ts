@@ -2,20 +2,10 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { getCorsOrigin } from "./config/cors";
 
 async function bootstrap() {
-  const originEnv = process.env.CORS_ORIGIN?.trim();
-  const parsedOrigin = (() => {
-    if (!originEnv) {
-      
-      return process.env.NODE_ENV === "production" ? [] : true;
-    }
-    const parts = originEnv
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    return parts.length > 1 ? parts : (parts[0] ?? true);
-  })();
+  const parsedOrigin = getCorsOrigin();
 
   const app = await NestFactory.create(AppModule, {
     cors: { origin: parsedOrigin, credentials: true },
