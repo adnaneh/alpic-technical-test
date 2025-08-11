@@ -10,7 +10,7 @@ import {
   pipeUIMessageStreamToResponse,
   createUIMessageStream,
 } from "ai";
-// Use validated DTOs rather than raw UIMessage type
+
 
 import { McpClientService } from "../mcp/mcp-client.service";
 import { ChatRequestDto } from "./chat.dto";

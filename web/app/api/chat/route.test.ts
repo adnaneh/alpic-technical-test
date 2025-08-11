@@ -15,8 +15,8 @@ describe('app/api/chat/route POST', () => {
     Object.defineProperty(globalThis, 'fetch', { value: originalFetch, configurable: true });
   });
 
-  it('returns 503 when BACKEND_URL is missing', async () => {
-    delete process.env.BACKEND_URL;
+  it('returns 503 when INTERNAL_API_URL is missing', async () => {
+    delete process.env.INTERNAL_API_URL;
 
     const req = new NextRequest('http://localhost/api/chat', {
       method: 'POST',
@@ -31,7 +31,7 @@ describe('app/api/chat/route POST', () => {
   });
 
   it('forwards to backend and strips hop-by-hop headers', async () => {
-    process.env.BACKEND_URL = 'http://upstream:3001';
+    process.env.INTERNAL_API_URL = 'http://upstream:3001';
 
     const fetchMock = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
       const h = new Headers(init?.headers);

@@ -18,7 +18,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --selectProjects e2e"
+    "test:e2e": "RUN_E2E=1 jest --selectProjects e2e"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.4",

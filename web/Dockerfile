@@ -1,53 +1,24 @@
-FROM node:20-slim
-
+FROM node:20-slim AS deps
 WORKDIR /app
-
-# Ensure base runtime libs for native addons
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libstdc++6 libgcc-s1 ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
-
 COPY package*.json ./
 
-# Install all deps including dev (Next/Tailwind build-time)
-# Keep NODE_ENV=production for consistent Next behavior, but force dev deps
-ENV NODE_ENV=production
-RUN npm install --include=dev
+RUN npm ci --no-audit --no-fund
 
-# Ensure the correct Lightning CSS native binary is present for the
-# current architecture to avoid runtime resolution issues during build.
-# Uses TARGETARCH when available, otherwise infers via dpkg.
-ARG TARGETARCH
-RUN set -eux; \
-    arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
-    case "$arch" in \
-      amd64) npm install lightningcss-linux-x64-gnu --no-save && cp node_modules/lightningcss-linux-x64-gnu/lightningcss.linux-x64-gnu.node node_modules/lightningcss/ || true ;; \
-      arm64) npm install lightningcss-linux-arm64-gnu --no-save && cp node_modules/lightningcss-linux-arm64-gnu/lightningcss.linux-arm64-gnu.node node_modules/lightningcss/ || true ;; \
-      *) echo "Unknown arch: $arch; skipping lightningcss native add-on pin" ;; \
-    esac
-
-# Ensure Tailwind Oxide native binding is present for the architecture
-ARG TARGETARCH
-RUN set -eux; \
-    arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
-    case "$arch" in \
-      amd64) npm install @tailwindcss/oxide-linux-x64-gnu --no-save || true ;; \
-      arm64) npm install @tailwindcss/oxide-linux-arm64-gnu --no-save || true ;; \
-      *) echo "Unknown arch: $arch; skipping oxide native add-on" ;; \
-    esac
-
-# Ensure PostCSS build plugins are present even if dev deps are omitted
-# PostCSS/Tailwind plugins are regular dependencies now
-
+FROM node:20-slim AS build
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+ENV NODE_ENV=production
 RUN NODE_OPTIONS="--max-old-space-size=512" npm run build
 
-RUN npm prune --omit=dev
-
-# Switch final container runtime to production
+FROM node:20-slim AS runner
+WORKDIR /app
 ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/dist ./dist
 
 EXPOSE 3000
-
 CMD ["node", "dist/server.js"]

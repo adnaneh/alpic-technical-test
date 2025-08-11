@@ -4,10 +4,7 @@ const compat = new FlatCompat({ baseDirectory: __dirname });
 module.exports = [
   ...compat.config({ extends: ['next/core-web-vitals'] }),
   {
-    ignores: ['.next/**', 'node_modules/**', 'dist/**']
-  },
-  {
-    files: ['**/*.ts', '**/*.tsx'],
+    ignores: ['.next*.ts', '**/*.tsx'],
     languageOptions: {
       parser: require('@typescript-eslint/parser'),
     },

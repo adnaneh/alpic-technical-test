@@ -40,8 +40,8 @@ async function bootstrap() {
     );
   }
 
-  const port = Number(process.env.PORT) || 3001;
-  // Bind on IPv6 any-address to allow dual-stack (IPv6 + IPv4) in containerized envs
+  const port = Number(process.env.PORT) || 3000;
+  
   await app.listen(port, "::");
 }
 bootstrap();
