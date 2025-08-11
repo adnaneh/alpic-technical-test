@@ -55,6 +55,7 @@ export class ChatController {
     const openai = createOpenAI({
       apiKey: this.cfg.get<string>(CFG_OPENAI_API_KEY),
     });
+    const modelName = this.cfg.get<string>(CFG_OPENAI_MODEL) ?? "gpt-4o";
     const model = openai.responses(modelName);
     const maxSteps = Number(this.cfg.get(CFG_CHAT_MAX_STEPS)) || 10;
     const tools = this.mcpClient.listAllToolDefs({ socketId: body.socketId });
@@ -90,9 +91,6 @@ export class ChatController {
         const responseId = metadata?.openai?.responseId;
         if (responseId) {
           writer.write({ type: "data-response-id", data: { responseId } });
-          const requestId = req.id;
-          const prefix = requestId ? `[${requestId}] ` : "";
-          this.logger.log(`${prefix}Response ID: ${responseId}`);
         }
       },
     });
