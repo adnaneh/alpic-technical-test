@@ -1,6 +1,6 @@
 module.exports = [
   {
-    files: ["***.ts"],
+    files: ["**/*.ts"],
     languageOptions: {
       parser: require("@typescript-eslint/parser"),
       parserOptions: {
@@ -15,6 +15,7 @@ module.exports = [
     rules: {
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "error",
     },
   },
 ];
