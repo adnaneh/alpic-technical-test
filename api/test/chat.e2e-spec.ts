@@ -1,5 +1,6 @@
 import { Test } from "@nestjs/testing";
 import type { INestApplication } from "@nestjs/common";
+import { ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 
 import { ChatController } from "../src/chat/chat.controller";
@@ -60,7 +61,7 @@ jest.mock("ai", () => {
 
 const maybeDescribe = process.env.RUN_E2E === "1" ? describe : describe.skip;
 
-maybeDescribe("ChatController (e2e)", () => {
+describe("ChatController (e2e)", () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -82,6 +83,7 @@ maybeDescribe("ChatController (e2e)", () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
     await app.init();
   });
 
@@ -96,9 +98,9 @@ maybeDescribe("ChatController (e2e)", () => {
       parts: [{ type: "text", text: "Hello e2e" }],
     };
 
-    await request(app.getHttpServer())
+    await request(app.getHttpAdapter().getInstance())
       .post("/chat")
-      .send({ message, previousResponseId: "prev-999" })
+      .send({ socketId: "s-1", message, previousResponseId: "prev-999" })
       .expect(200)
       .expect("Content-Type", /text\/event-stream/);
 
@@ -126,7 +128,7 @@ maybeDescribe("ChatController (e2e)", () => {
       parts: [{ type: "file", mediaType: "image/png", url: "u" }],
     };
 
-    await request(app.getHttpServer())
+    await request(app.getHttpAdapter().getInstance())
       .post("/chat")
       .send({ message })
       .expect(400);
