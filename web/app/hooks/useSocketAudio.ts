@@ -9,7 +9,16 @@ export function useSocketAudio(
   const [socketId, setSocketId] = useState<string | null>(null);
 
   useEffect(() => {
-    const socket = io("/", { path: "/socket.io/", transports: ["websocket", "polling"] });
+    const base = (process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "").trim();
+    const url = base || "/";
+    const socket = io(url, {
+      path: "/socket.io",
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionDelay: 500,
+      reconnectionDelayMax: 3000,
+      timeout: 10000,
+    });
 
     socket.on("connect", () => setSocketId(socket.id ?? null));
     socket.on("disconnect", () => setSocketId(null));
@@ -31,6 +40,9 @@ export function useSocketAudio(
 
     socket.on("pause", () => withAudio(a => a.pause()));
     socket.on("resume", safePlay);
+
+    socket.on("connect_error", (err) => console.warn("Socket connect error:", err?.message || err));
+    socket.on("error", (err) => console.warn("Socket error:", err));
 
     return () => {
       socket.disconnect();

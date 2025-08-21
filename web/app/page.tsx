@@ -17,6 +17,7 @@ function hasResponseId(data: unknown): data is { responseId: string } {
 }
 
 export default function Home() {
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "";
   const [input, setInput] = useState("");
   const prevRespId = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,6 +32,7 @@ export default function Home() {
 
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
+      api: API_BASE ? `${API_BASE}/api/chat` : `/api/chat`,
       prepareSendMessagesRequest: ({ messages }) => ({
         body: {
           message: messages[messages.length - 1],
