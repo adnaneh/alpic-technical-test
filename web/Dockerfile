@@ -18,6 +18,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NODE_ENV=production
+# Ensure optional public dir exists to allow COPY in runner
+RUN mkdir -p public
 # Build-time public envs (set as Build Args in your platform)
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_SOCKET_URL
