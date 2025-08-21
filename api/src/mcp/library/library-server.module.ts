@@ -15,6 +15,7 @@ const LibraryServerDynamic = McpModule.forRoot({
   name: LIBRARY_SERVER_NAME,
   version: LIBRARY_SERVER_VERSION,
   apiPrefix: LIBRARY_API_PREFIX,
+  transport: [],
 });
 
 const MCP_MODULE_ID_VALUE = getMcpModuleId(LibraryServerDynamic);

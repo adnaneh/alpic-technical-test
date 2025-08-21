@@ -6,10 +6,11 @@ import {
   stepCountIs,
   streamText,
 } from "ai";
-import { ConfigService } from "@nestjs/config";
 import { response } from "express";
 import { McpClientService } from "../mcp/mcp-client.service";
 import { Test, TestingModule } from "@nestjs/testing";
+import { UIMessageDto } from "./chat.dto";
+import { ConfigService } from "@nestjs/config";
 
 jest.mock("@ai-sdk/openai", () => ({
   createOpenAI: jest.fn(() => ({ responses: jest.fn(() => "mock-model") })),
@@ -34,16 +35,11 @@ describe("ChatController", () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    process.env.OPENAI_API_KEY = "test-api-key";
     moduleRef = await Test.createTestingModule({
       controllers: [ChatController],
       providers: [
-        {
-          provide: ConfigService,
-          useValue: {
-            get: (k: string) =>
-              k === "OPENAI_API_KEY" ? "test-api-key" : undefined,
-          },
-        },
+        ConfigService,
         {
           provide: McpClientService,
           useValue: { listAllToolDefs: jest.fn(() => ({ toolA: {} })) },
@@ -93,7 +89,6 @@ describe("ChatController", () => {
       parts: [{ type: "text", text: "Play something" }],
     };
     await controller.chat({ message, socketId: "sock-123" }, response);
-    expect(mcpClient.listAllToolDefs).toHaveBeenCalled();
+    expect(mcpClient.listAllToolDefs).toHaveBeenCalledWith({ socketId: "sock-123" });
   });
 });
-import { UIMessageDto } from "./chat.dto";

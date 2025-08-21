@@ -16,6 +16,7 @@ const PlaybackServerDynamic = McpModule.forRoot({
   name: PLAYBACK_SERVER_NAME,
   version: PLAYBACK_SERVER_VERSION,
   apiPrefix: PLAYBACK_API_PREFIX,
+  transport: [],
 });
 
 const MCP_MODULE_ID_VALUE = getMcpModuleId(PlaybackServerDynamic);
