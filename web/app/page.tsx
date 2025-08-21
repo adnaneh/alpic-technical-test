@@ -1,7 +1,7 @@
-import dynamic from "next/dynamic";
-import React from "react";
+"use client";
 
-const ClientApp = dynamic(() => import("./ClientApp"), { ssr: false, loading: () => null });
+import React from "react";
+import ClientApp from "./ClientApp";
 
 export default function Home() {
   return <ClientApp />;
