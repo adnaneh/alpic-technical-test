@@ -71,12 +71,13 @@ export default function ClientApp() {
   const onSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
+      if (loading || !connected) return;
       const q = input.trim();
       if (!q) return;
       quick(q);
       setInput("");
     },
-    [input, quick]
+    [input, quick, loading, connected]
   );
 
   return (
@@ -123,13 +124,16 @@ export default function ClientApp() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask anything"
           className="flex-1 border p-2 rounded"
-          disabled={loading || !connected}
+          disabled={!connected}
         />
-        <button type="submit" className="bg-black text-white px-4 py-2 rounded disabled:opacity-50" disabled={loading || !connected}>
+        <button
+          type="submit"
+          className="bg-black text-white px-4 py-2 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          disabled={loading || !connected || input.trim().length === 0}
+        >
           Send
         </button>
       </form>
     </main>
   );
 }
-

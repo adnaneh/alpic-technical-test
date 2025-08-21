@@ -20,6 +20,11 @@
         "name": "next"
       }
     ],
+    "types": [
+      "vitest/globals",
+      "vitest/importMeta",
+      "node"
+    ],
     "paths": {
       "@/*": ["./*"]
     }

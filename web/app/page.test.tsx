@@ -43,7 +43,19 @@ describe('Home page', () => {
     });
   });
 
-  it('form submit sends message and clears input; controls disabled while loading', () => {
+  it('disables Send when input is empty; enables with text', () => {
+    render(<Home />);
+    const input = screen.getByPlaceholderText('Ask anything');
+    const button = screen.getByRole('button', { name: 'Send' });
+
+    expect(input).toHaveValue('');
+    expect(button).toBeDisabled();
+
+    fireEvent.change(input, { target: { value: 'Hi' } });
+    expect(button).not.toBeDisabled();
+  });
+
+  it('form submit sends message and clears input; button disabled while loading but input stays enabled', () => {
     render(<Home />);
     const input = screen.getByPlaceholderText('Ask anything');
     const button = screen.getByRole('button', { name: 'Send' });
@@ -62,7 +74,7 @@ describe('Home page', () => {
     render(<Home />);
     const input2 = screen.getByPlaceholderText('Ask anything');
     const button2 = screen.getByRole('button', { name: 'Send' });
-    expect(input2).toBeDisabled();
+    expect(input2).not.toBeDisabled();
     expect(button2).toBeDisabled();
   });
 });
