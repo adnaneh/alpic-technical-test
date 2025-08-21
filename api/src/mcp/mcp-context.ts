@@ -1,3 +1,3 @@
 export type ToolCallContext = {
-  socketId?: string;
+  socketId: string;
 };

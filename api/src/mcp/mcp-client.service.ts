@@ -5,9 +5,8 @@ import {
   ToolMetadata,
   DiscoveredTool,
   ResourceMetadata,
+  McpRegistryService,
 } from "@rekog/mcp-nest";
-import { PlaybackMcpClientService } from "./playback/playback.mcp-client.service";
-import { LibraryMcpClientService } from "./library/library.mcp-client.service";
 import z from "zod";
 import type { ToolCallContext } from "./mcp-context";
 
@@ -15,23 +14,22 @@ import type { ToolCallContext } from "./mcp-context";
 export class McpClientService {
   constructor(
     private readonly moduleRef: ModuleRef,
-    private readonly playbackTools: PlaybackMcpClientService,
-    private readonly libraryTools: LibraryMcpClientService,
+    private readonly registry: McpRegistryService,
   ) {}
 
   listAllToolDefs(ctx?: ToolCallContext): Record<string, Tool> {
     const toolDefs: Record<string, Tool> = {};
 
-    const playbackDiscovered = this.playbackTools.getTools();
-    const libraryDiscovered = this.libraryTools.getTools();
-    const playbackResources = this.playbackTools.getResources();
-    const libraryResources = this.libraryTools.getResources();
-    const allTools = [
-      ...playbackDiscovered,
-      ...libraryDiscovered,
-      ...playbackResources,
-      ...libraryResources,
-    ];
+    const moduleIds = this.registry.getMcpModuleIds();
+    const allTools: Array<
+      DiscoveredTool<ToolMetadata | ResourceMetadata>
+    > = [];
+
+    for (const id of moduleIds) {
+      const tools = this.registry.getTools(id);
+      const resources = this.registry.getResources(id);
+      allTools.push(...tools, ...resources);
+    }
 
     for (const t of allTools) {
       toolDefs[t.metadata.name] = this.bindTool(t, ctx);

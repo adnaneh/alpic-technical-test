@@ -5,9 +5,8 @@ import type {
   ToolMetadata,
   ResourceMetadata,
 } from "@rekog/mcp-nest";
+import { McpRegistryService } from "@rekog/mcp-nest";
 import { Test } from "@nestjs/testing";
-import { PlaybackMcpClientService } from "./playback/playback.mcp-client.service";
-import { LibraryMcpClientService } from "./library/library.mcp-client.service";
 import z from "zod";
 
 class ProviderA {
@@ -55,17 +54,13 @@ describe("McpClientService", () => {
         ProviderA,
         ProviderB,
         {
-          provide: PlaybackMcpClientService,
+          provide: McpRegistryService,
           useValue: {
-            getTools: () => [discoveredTool],
-            getResources: () => [discoveredRes],
-          },
-        },
-        {
-          provide: LibraryMcpClientService,
-          useValue: {
-            getTools: (): DiscoveredTool<ToolMetadata>[] => [],
-            getResources: (): DiscoveredTool<ResourceMetadata>[] => [],
+            getMcpModuleIds: () => ["playback"],
+            getTools: (id: string): DiscoveredTool<ToolMetadata>[] =>
+              id === "playback" ? [discoveredTool] : [],
+            getResources: (id: string): DiscoveredTool<ResourceMetadata>[] =>
+              id === "playback" ? [discoveredRes] : [],
           },
         },
       ],
