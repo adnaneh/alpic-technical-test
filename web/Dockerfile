@@ -32,8 +32,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 libgcc-s1 ca-certificates \
   && rm -rf /var/lib/apt/lists/*
-COPY package*.json ./
-RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+# Use exactly the same dependencies as used during build to avoid version mismatches
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json ./package.json
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 
