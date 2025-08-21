@@ -23,7 +23,7 @@ vi.mock('./hooks/useSocketAudio', () => ({
   useSocketAudio: () => 'sock-1',
 }));
 
-import Home from './page';
+import Home from './ClientApp';
 
 describe('Home page', () => {
   beforeEach(() => {
