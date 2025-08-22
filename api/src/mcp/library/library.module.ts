@@ -7,16 +7,16 @@ import {
   LIBRARY_API_PREFIX,
 } from "./library.constants";
 
-@Module({
-  imports: [
-    McpModule.forRoot({
+const libraryMcpModule = McpModule.forRoot({
       name: LIBRARY_SERVER_NAME,
       version: LIBRARY_SERVER_VERSION,
       apiPrefix: LIBRARY_API_PREFIX,
       transport: [],
-    }),
-  ],
+    })
+
+@Module({
+  imports: [libraryMcpModule],
   providers: [LibraryService],
-  exports: [],
+  exports: [libraryMcpModule],
 })
 export class LibraryMcpModule {}

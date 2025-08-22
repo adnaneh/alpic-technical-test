@@ -8,7 +8,7 @@ import {
   PLAYBACK_API_PREFIX,
 } from "./playback.constants";
 
-const mcpModule = McpModule.forRoot({
+const playbackMcpModule = McpModule.forRoot({
   name: PLAYBACK_SERVER_NAME,
   version: PLAYBACK_SERVER_VERSION,
   apiPrefix: PLAYBACK_API_PREFIX,
@@ -16,8 +16,8 @@ const mcpModule = McpModule.forRoot({
 });
 
 @Module({
-  imports: [mcpModule],
+  imports: [playbackMcpModule],
   providers: [PlaybackService, PlaybackGateway],
-  exports: [mcpModule],
+  exports: [playbackMcpModule],
 })
 export class PlaybackMcpModule {}
